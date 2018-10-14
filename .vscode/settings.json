@@ -27,5 +27,6 @@
         "typescript",
         "typescriptreact",
         "yml"
-    ]
+    ],
+    "python.pythonPath": "/usr/bin/python3"
 }
