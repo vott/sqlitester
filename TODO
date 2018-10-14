@@ -1,0 +1,38 @@
+
+Todo:
+  ✔ Clone  DVWA VM (Docker). @done(18-10-13 10:58)
+  ☐ Write a short python program that will crawl the application and detect an SQL injection vulnerability in the form at: /vulnerabilities/sqli/
+
+Constrains:
+  ☐ Spend approximately 2 to 3 hours.
+
+Requirements:
+  Software:
+    Python:
+      ☐ Easily testable. (Linting, OOD)
+      Crawler:
+        ☐ Recover if the crawler process dies mid crawl (database, auto-recovery).
+        ☐ Avoid crawling out of scope or narrowing the focus of the crawler. (database table)
+    ☐ Design to be extended across multiple servers (controller that spawns multiple workers to go through the tree finding sqli vulnerabilities)
+    ☐ Design could be extended to include multiple SQL injection payloads. (database table)
+    ☐ Retrieve database username and version
+  Architecture:
+    ☐ Architecture diagram
+    ☐ Design to be extended across multiple servers
+  ☐ Redact text about Thinking when building a solution
+
+Non explicit requirements:
+  ✔ MongoDb as a Database @done(18-10-14 14:29)
+
+Steps:
+  ☐ Setup the docker image if it is needed.
+  ☐ Authenticate to the app: admin/password.
+  ☐ Alter the 'security' cookie to 'low' in requests - otherwise filtering will be applied.
+  ☐ Use a logical check to confirm the vulnerability.
+  ☐ Exploit to obtain the database username and version (it is a MySQL database) as further confirmation.
+
+Tech Stack:
+  ✔ Docker @done(18-10-14 14:32)
+  ✔ Python 3 @done(18-10-14 14:32)
+  ✔ Selenium @done(18-10-14 14:32)
+  ✔ Mongo @done(18-10-14 14:32)
