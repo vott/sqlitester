@@ -12,7 +12,7 @@ RUN chown seluser /var/src/app
 RUN chown seluser /var/log
 USER seluser
 RUN pip3 install -r requirements.txt
-RUN python -m pip install motor
+RUN python3 -m pip install motor
 
 
 ENV PYTHONUNBUFFERED 1

@@ -1,6 +1,5 @@
 import csv
 import queue
-import logging
 import re
 
 from bs4 import BeautifulSoup
@@ -22,7 +21,7 @@ class Crawler(object):
     """
     allow_external_urls = False
 
-    def __init__(self, db, base_url=None, initial_path=None, levels=1):
+    def __init__(self, db, base_url=None, initial_path='', levels=1):
         """Setup and validate arguments to make them available 
         
         Arguments:
@@ -36,8 +35,6 @@ class Crawler(object):
 
         if not db:
             raise(ImproperlyConfigured('database connection'))
-        elif not initial_path:
-            raise(ImproperlyConfigured('initial path'))
         elif not base_url:
             raise(ImproperlyConfigured('base url'))
         elif not int(levels):
@@ -56,6 +53,7 @@ class Crawler(object):
         # Visited Urls
         self.visited = self.get_visited()
         self.url_regex = self.get_url_regex() 
+        self.levels = levels
         self._setup()
         self.broken_urls = self.get_broken_urls()
     
@@ -72,8 +70,9 @@ class Crawler(object):
     def get_base_url(self, url):
         # Horrible 80 + LINE 2
         regex = re.compile(r'^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}$')
-        regex.match(url)
-        return(regex.group())
+        print('>>>' + url)
+        _reg = regex.match(url)
+        return(_reg.group())
 
     def get_queue(self):
         return(queue.Queue())
@@ -90,7 +89,7 @@ class Crawler(object):
         base_url = self.base_url
         if self.is_relative(initial_path):
             _url = '{}{}'.format(base_url, initial_path)
-        self.queue.put(_url)
+        self.queue.put((_url, 0))
 
     def _process_page_object(self, page_object):
         """
@@ -100,34 +99,43 @@ class Crawler(object):
         pass
     
     def get_page_source(self, url):
+        print(url)
         try:
             self.browser.get(url)
             return self.browser.page_source
         except Exception as e:
             self.broken_urls.add(url)
-            logging.exception(e)
-            return
 
     def _get_page_object(self, html):
         if not html:
             raise(EmptyWebPage)
-        return BeautifulSoup(html, 'lxml')
+            print(BeautifulSoup(html, 'html'))
+        return BeautifulSoup(html, 'html')
         
-    def get_and_process_links(self, page, parent_url):
+    def get_and_process_links(self, page, parent_url, level):
+        print('finding links')
         links = page.find_all('a', href=True)
+        print(links)
         for link in links:
             _url = link['href']
+            print(_url)
             if(self.is_relative(_url)):
                 _url = '{}{}'.format(self.get_base_url(parent_url), _url)
             if _url not in self.visited and _url not in self.broken_urls:
-                self.queue.put(_url)
+                self.queue.put((_url, level + 1))
     
     def run(self):
         try:
-            parent_url = '' 
-            while True:
-                _url = self.queue.get()
+            level = 0
+            print(self.queue)
+            while level <= self.levels:
+                item = self.queue.get()
+                _url = item[0]
+                level = item[1]
+                print(_url)
+                print(level)
                 html = self.get_page_source(_url)
+                print(html)
                 if self.browser.current_url != _url:
                     self.visited.add(self.browser.current_url)
                 try:
@@ -136,10 +144,11 @@ class Crawler(object):
                     page = None
                     self.broken_urls.add(_url)
                 if page is not None:
-                    self.get_and_process_links(page, _url)
-                
+                    self.get_and_process_links(page, _url, level)
+                    self._process_page_object(page)
                 self.visited.add(_url) 
         except queue.Empty:
+            print(self.visited)
             self.display.stop()
             return True
         
@@ -147,7 +156,9 @@ class Crawler(object):
 
 
 
-
+# if __name__=='__main__':
+#     c = Crawler(True, 'http://titan.dcs.bbk.ac.uk/~kikpef01/testpage.html', '/')
+#     c.run()
         
     # def get_links(self, soup):
     #     for link in soup.find_all('a', href=True): #All links which have a href element
