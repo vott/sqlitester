@@ -6,16 +6,16 @@ services:
             - "80:80"
     tester:
         build: ./tester
-        # command: "sh run.sh"
+        command: "python3 tester/main.py"
         volumes:
             - .:/var/src/app
         privileged: true
         ports:
             - "4000:4000"
-    mongodb:
-        image: mongo:4.0.3-xenial
-        restart: always
-        ports:
-            - "27017:27017"
-        environment:
-            MONGO_INITDB_DATABASE: tester
+    # mongodb:
+    #     image: mongo:4.0.3-xenial
+    #     restart: always
+    #     ports:
+    #         - "27017:27017"
+    #     environment:
+    #         MONGO_INITDB_DATABASE: tester

@@ -9,30 +9,56 @@ Constrains:
 Requirements:
   Software:
     Python:
-      ☐ Easily testable. (Linting, OOD)
+      ✔ Easily testable. (Linting, OOD) @done(18-10-16 00:17)
       Crawler:
-        ☐ Recover if the crawler process dies mid crawl (database, auto-recovery).
-        ☐ Avoid crawling out of scope or narrowing the focus of the crawler. (database table)
-    ☐ Design to be extended across multiple servers (controller that spawns multiple workers to go through the tree finding sqli vulnerabilities)
-    ☐ Design could be extended to include multiple SQL injection payloads. (database table)
-    ☐ Retrieve database username and version
+        ✔ Recover if the crawler process dies mid crawl (database, auto-recovery). @done(18-10-16 00:16)
+        ✔ Avoid crawling out of scope or narrowing the focus of the crawler. (database table) @done(18-10-16 00:16)
+    ✔ Design to be extended across multiple servers (controller that spawns multiple workers to go through the tree finding sqli vulnerabilities) @done(18-10-16 00:16)
+    ✔ Design could be extended to include multiple SQL injection payloads. (database table) @done(18-10-16 07:49)
+    ✔ Retrieve database username and version @done(18-10-16 07:49)
   Architecture:
     ☐ Architecture diagram
     ☐ Design to be extended across multiple servers
-  ☐ Redact text about Thinking when building a solution
+  ✔ Redact text about Thinking when building a solution @done(18-10-16 07:49)
 
 Non explicit requirements:
   ✔ MongoDb as a Database @done(18-10-14 14:29)
 
 Steps:
-  ☐ Setup the docker image if it is needed.
-  ☐ Authenticate to the app: admin/password.
-  ☐ Alter the 'security' cookie to 'low' in requests - otherwise filtering will be applied.
-  ☐ Use a logical check to confirm the vulnerability.
-  ☐ Exploit to obtain the database username and version (it is a MySQL database) as further confirmation.
+  ✔ Setup the docker image if it is needed. @done(18-10-16 07:48)
+  ✔ Authenticate to the app: admin/password. @done(18-10-16 07:48)
+  ✔ Alter the 'security' cookie to 'low' in requests - otherwise filtering will be applied. @done(18-10-16 07:49)
+  ✔ Use a logical check to confirm the vulnerability. @done(18-10-16 07:49)
+  ✔ Exploit to obtain the database username and version (it is a MySQL database) as further confirmation. @done(18-10-16 07:49)
 
 Tech Stack:
   ✔ Docker @done(18-10-14 14:32)
   ✔ Python 3 @done(18-10-14 14:32)
   ✔ Selenium @done(18-10-14 14:32)
   ✔ Mongo @done(18-10-14 14:32)
+
+
+Plan:
+  ✔ Write docker files and docker compose for and start the development. @done(18-10-16 06:38)
+    ✔ MongoDB for the queue and persistence. @done(18-10-16 06:38)
+    ✔ Selenium to adapt to js based apps. @done(18-10-16 06:38)
+    ✔ Python3 because of the requirements. @done(18-10-16 06:38)
+  ✔ Write a general and extensible Crawler to find the form and creating a message that triggers the sql injection test task. @done(18-10-16 06:38)
+  ☐ Create unit tests for everything.
+  ✔ Write a function that is triggered when the message to analyse a form is received and that it tests a form for sql injection. @done(18-10-16 07:49)
+  ☐ Integrate everything with mongo to allow recovery when either the crawler or the tester fail.
+
+Blockers:
+  ☐ Selenium is hard to use inside docker.
+  ☐ A general crawler takes a lot of time.
+  ☐ The time frame not enough for my design only if I didn't have the blocker #1
+
+What I learned:
+  ☐ Is better a less complicated system that takes cake of all the requirements.
+  ☐ Non specific requirements should be the last in the priority queue.
+  ☐ Do a working demo first for large projects (Steps).
+
+What I did well:
+  ☐ Demonstrating my capabilities in python.
+  ☐ Showing how I think.
+  ☐ Being organized about the requirements.

